@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Address Book{% endblock %}
+
+{% block body %}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <a class="new_contact ajax_loader" id="add_new_contact" href="/address_book/add_new_view">
+                Add New
+            </a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col=md-12">
+
+            <table class="table table-striped table-bordered display" id="address_book_table">
+                <thead>
+                <tr>
+                    <th></th>
+                    <th>Name</th>
+                    <th>Surname</th>
+                    <th>NickName</th>
+                    <th>Date Created</th>
+                    <th>
+                    </th>
+                </tr>
+                </thead>
+            </table>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script>
+    /* Formatting function for row details - modify as you need */
+    function format ( data ) {
+        console.log(data['contact_info']);
+        var obj = data['contact_info'];
+        var table_html = '';
+
+
+
+        $.each(obj, function(key,value) {
+            console.log('key: ' + key);
+            console.log('value: ' + value);
+            if (value.contact_type === "phone") {
+                table_html = table_html + "<tr>" +
+                    "<td>Phone Number: </td>" +
+                    "<td>"+value.contact_value+"</td>" +
+                    "<td><a id='edit_contact_info' class='edit_contact_info' value='"+value.id+"' href='/address_book/add_edit_contact.php'>Edit</a><a class='ajax_loader delete_button' value='"+value.id+"' href='/address_book/add_edit_contact.php'>Delete</a></td>" +
+                    "</tr>";
+            }
+            if (value.contact_type === "email") {
+                table_html = table_html + "<tr>" +
+                    "<td>Email: </td>" +
+                    "<td>"+value.contact_value+"</td>" +
+                    "<td><a class='edit_contact_info' value='"+value.id+"' href='/address_book/add_edit_contact.php'>Edit</a><a class='ajax_loader delete_button' value='"+value.id+"' href='/address_book/add_edit_contact.php'>Delete</a></td>" +
+                    "</tr>";
+            }
+            if (value.contact_type === "address") {
+                table_html = table_html + "<tr>" +
+                    "<td>Address: </td>" +
+                    "<td>"+value.contact_value+"</td>" +
+                    "<td><a class='edit_contact_info' value='"+value.id+"' href='/address_book/add_edit_contact.php'>Edit</a><a class='ajax_loader delete_button' value='"+value.id+"' href='/address_book/add_edit_contact.php'>Delete</a></td>" +
+                    "</tr>";
+            }
+
+        });
+        return '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">'+
+            table_html +
+            '<tr><td colspan="3" align="center"><a class="new_contact_info_button ajax_loader" href="/address_book/add_new_contact_info">Add New Contact Information</a></td></tr>'+
+            '</table>';
+    }
+
+    // $(document).ready(function() {
+
+    $.ajax({
+        method: "GET",
+        url: "/api/address_book/contacts_full",
+        success: function(result){
+
+            console.log(JSON.parse(result));
+
+            var table = $('#address_book_table').DataTable( {
+                "data": JSON.parse(result),
+                "columns": [
+                    {
+                        "className":      'details-control',
+                        "orderable":      false,
+                        "data":           null,
+                        "defaultContent": ' + '
+                    },
+                    { "data": "contact.name" },
+                    { "data": "contact.surname" },
+                    { "data": "contact.nickname" },
+                    { "data": "contact.date_created" },
+                    { "data": function ( data, type, row ) {
+                            $("#edit_contact_"+data.contact.id).on('click', function(e){
+                                e.preventDefault();
+                                var load_url = $(this).attr('href');
+                                $('.overlay_container').fadeIn();
+                                $('.overlay_content').load(load_url);
+
+                            });
+                            $("#delete_contact_"+data.contact.id).on('click', function(e){
+                                e.preventDefault();
+                                var load_url = $(this).attr('href');
+                                var formData = {
+                                    'contact_id'        : data.contact.id
+                                };
+                                $.ajax({
+                                    type: "POST",
+                                    url: load_url,
+                                    dataType: "JSON",
+                                    data: formData,
+                                    success: function(result){
+                                        $('.overlay_container').fadeIn();
+                                        $('.overlay_content').html('<h1 align="center">Successfully deleted contact: '+data.contact.id+'</h1>');
+                                        $('.overlay_container').fadeOut(5000);
+                                    }
+                                });
+
+                            });
+                            return '<a id="edit_contact_'+data.contact.id+'" class="edit_contact ajax_loader" href="/address_book/add_new_view/'+data.contact.id+'">Edit</a><a id="delete_contact_'+data.contact.id+'" class="delete_contact ajax_loader" href="/api/address_book/delete_contact/'+data.contact.id+'">Delete</a>';
+                        }
+                    }
+                ],
+                "order": [[1, 'asc']]
+            } );
+
+            // Add event listener for opening and closing details
+            $('#address_book_table tbody').on('click', 'td.details-control', function () {
+                var tr = $(this).closest('tr');
+                var row = table.row( tr );
+                if ( row.child.isShown() ) {
+                    row.child.hide();
+                    tr.removeClass('shown');
+                }
+                else {
+                    row.child( format(row.data()) ).show();
+                    tr.addClass('shown');
+
+                    $(".new_contact_info_button").on('click', function(e){
+                        e.preventDefault();
+                        alert('create new contact info');
+                        var load_url = $(this).attr('href');
+                        $('.overlay_container').fadeIn();
+                        $(".overlay_content").html("");
+                        $(".overlay_content").empty();
+                        $('.overlay_content').load(load_url);
+                    });
+
+                }
+            } );
+
+        }
+    });
+
+    // } );
+</script>
+
+<script>
+
+    $(".new_contact").on('click', function(e){
+        e.preventDefault();
+        var load_url = $(this).attr('href');
+        $('.overlay_container').fadeIn();
+        $(".overlay_content").html("");
+        $(".overlay_content").empty();
+        $('.overlay_content').load(load_url);
+
+    });
+
+    $(".edit_contact").on('click', function(e){
+        e.preventDefault();
+        alert('edit contact');
+        var load_url = $(this).attr('href');
+        $('.overlay_container').fadeIn();
+        $(".overlay_content").html("");
+        $(".overlay_content").empty();
+        $('.overlay_content').load(load_url);
+    });
+
+    $(".delete_contact").on('click', function(e){
+        e.preventDefault();
+        alert('delete contact');
+        var load_url = $(this).attr('href');
+        $('.overlay_container').fadeIn();
+        $(".overlay_content").html("");
+        $(".overlay_content").empty();
+        $('.overlay_content').load(load_url);
+    });
+
+    $(".new_contact_info_button").on('click', function(e){
+        e.preventDefault();
+        var load_url = $(this).attr('href');
+        $('.overlay_container').fadeIn();
+        $('.overlay_content').load(load_url);
+
+    });
+</script>
+
+
+{% endblock %}

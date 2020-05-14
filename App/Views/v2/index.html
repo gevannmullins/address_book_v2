@@ -1,0 +1,208 @@
+{% extends "layouts/base_v2.html" %}
+
+{% block title %}Home - Address Book{% endblock %}
+
+{% block body %}
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#menu").accordion();
+    });
+</script>
+<style>
+    .contact_details_style {
+        font-size: 14px;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row" style="margin-bottom: 20px;">
+        <div class="col-md-6 text-left">
+            <form class="form-group form-inline" name="search_contact" action="/v2/search" method="post" style="border:none;margin:0;padding:0;">
+                <div class="form-control" style="border:none;margin:0;padding:0;">
+                    <label for="search_contact_info">Search
+                    <input type="text" name="search_contact_info" id="search_contact_info" value="" placeholder="Search Term">
+                    </label>
+                </div>
+                <div class="form-control" style="border:none;margin:0;padding:0;">
+                    <input type="submit" class="search_value_button" value="Submit" />
+                </div>
+            </form>
+        </div>
+        <div class="col-md-6 text-right">
+            <a class="new_contact" id="add_new_contact" href="/address_book/add_new_view">
+                Add New Contact
+            </a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col=md-12">
+
+            <div class="content">
+
+                <nav>
+
+                    <div id="menu" class="menu">
+                        <ul>
+                            {% for key,data in contacts_all %}
+                            <li class="active contact_container" style="margin-top:5px; margin-bottom:5px;border:#030303 1px solid;">
+                                <div class="container-fluid contact_details_style">
+                                    <div class="row">
+                                        <div class="col-md-1">
+                                            <span class="submenu-indicator">+</span>
+                                        </div>
+                                        <div class="col-md-3 text-left">
+                                            <b>Name:</b> {{ data.contact.name|capitalize }}
+                                        </div>
+                                        <div class="col-md-3 text-left">
+                                            <b>Surname:</b> {{ data.contact.surname|capitalize }}
+                                        </div>
+                                        <div class="col-md-3 text-left">
+                                            <b>Nickname:</b> {{ data.contact.nickname|capitalize }}
+                                        </div>
+                                        <div class="col-md-2">
+                                            <a class="contact_action_button edit_contact" contact_id="{{data.contact.id}}" href="/address_book/add_new_view/{{data.contact.id}}">EDIT</a>
+                                            <a class="contact_action_button delete_contact" contact_id="{{data.contact.id}}" href="/api/address_book/delete_contact/{{data.contact.id}}">DELETE</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <ul class="submenu">
+                                    <li>
+                                        <div class="container-fluid">
+                                            {% for info in data.contact_info %}
+                                            <div class="row contact_info_row">
+                                                <div class="col-xs-4 text-right"><b>{{ info.contact_type|capitalize }}: </b></div>
+                                                <div class="col-xs-4 text-left">{{ info.contact_value }}</div>
+                                                <div class="col-xs-4 text-right">
+                                                    <a href="/address_book/add_new_contact_info/{{data.contact.id}}/{{info.id}}" class="contact_action_button edit_contact_info" contact_info_id="{{info.id}}" contact_id="{{data.contact.id}}">EDIT</a>
+                                                    <a href="/api/address_book/delete_contact_info/{{info.id}}" class="contact_action_button delete_contact_info" contact_info_id="{{info.id}}" contact_id="{{data.contact.id}}">DELETE</a>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <a class="new_contact_info_button" href="/address_book/add_new_contact_info/{{data.contact.id}}">
+                                            Add New Contact Information
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                </nav>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+    $(document).ready(function(){
+
+
+        // Basic search functionality
+        $(".search_value_button").on("click", function(e){
+            e.preventDefault();
+            let search_value = $("#search_contact_info").val();
+            window.location.href = "/v2/search/"+search_value;
+
+        });
+
+        //////////////////////////////// New,Edit,Delete - Contact
+
+        // New Contact
+        $(".new_contact").on("click", function(e){
+            e.preventDefault();
+            var load_url = $(this).attr('href');
+            $('.overlay_container').fadeIn();
+            $(".overlay_content").html("");
+            $(".overlay_content").empty();
+            $('.overlay_content').load(load_url);
+        });
+
+        // Edit Contact
+        $(".edit_contact").on('click', function(e){
+            e.preventDefault();
+            let load_url = $(this).attr('href');
+            $('.overlay_container').fadeIn();
+            $('.overlay_content').load(load_url);
+        });
+
+        // Delete Contact
+        $(".delete_contact").on('click', function(e){
+            e.preventDefault();
+            let load_url = $(this).attr('href');
+            let contact_id = $(this).attr('contact_id');
+            let formData = {
+                'contact_id': contact_id
+            };
+            $.ajax({
+                type: "POST",
+                url: load_url,
+                dataType: "JSON",
+                data: formData,
+                success: function(result){
+                    $('.overlay_container').fadeIn();
+                    $('.overlay_content').html('<h1 align="center">Successfully deleted contact: '+contact_id+'</h1>');
+                    $('.overlay_container').fadeOut(5000);
+                    window.location.href = '/v2';
+                }
+            });
+
+        });
+
+
+        /////////////////////////////// New,Edit,Delete - Contact Information
+
+        // New Contact Information
+        $(".new_contact_info_button").on('click', function(e){
+            e.preventDefault();
+            alert('create new contact info');
+            var load_url = $(this).attr('href');
+            $('.overlay_container').fadeIn();
+            $(".overlay_content").html("");
+            $(".overlay_content").empty();
+            $('.overlay_content').load(load_url);
+        });
+
+        // Edit Contact Information
+        $(".edit_contact_info").on('click', function(e){
+            e.preventDefault();
+            let load_url = $(this).attr('href');
+            $('.overlay_container').fadeIn();
+            $('.overlay_content').load(load_url);
+        });
+
+        // Delete Contact Information
+        $(".delete_contact_info").on('click', function(e){
+            e.preventDefault();
+            let load_url = $(this).attr('href');
+            let contact_info_id = $(this).attr('contact_info_id');
+            let formData = {
+                'contact_info_id': contact_info_id
+            };
+            $.ajax({
+                type: "POST",
+                url: load_url,
+                dataType: "JSON",
+                data: formData,
+                success: function(result){
+                    $('.overlay_container').fadeIn();
+                    $('.overlay_content').html('<h1 align="center">Successfully deleted contact: '+contact_id+'</h1>');
+                    $('.overlay_container').fadeOut(5000);
+                    window.location.href = '/v2';
+                }
+            });
+
+        });
+
+    });
+
+</script>
+{% endblock %}
