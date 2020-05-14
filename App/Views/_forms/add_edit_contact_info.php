@@ -1,7 +1,3 @@
-<?php
-
-?>
-
 <div class="container-fluid">
     <div class="row">
         <div class="col-xs-11 text-center">
@@ -68,7 +64,6 @@
 <script>
     $(".submit_button").on("click", function(e){
         e.preventDefault();
-        alert("submitting the form");
         let contact_id = $("#id_value").val();
         let contact_info_id = $("#id_info_value").val();
         var formData = {
@@ -81,14 +76,14 @@
         $.ajax({
             type: "POST",
             url: "/api/address_book/add_new_contact_info/"+contact_id,
-            // url: "/process.php",
             dataType: "JSON",
             data: formData,
-            // data: $("#add_new_contact").serialize(),
             success: function(result){
-                // console.log(formData);
-                alert('data submitted');
-                console.log(result);
+                $(".overlay_content").html("<h1>Data submitted successfully...</h1>");
+                $(".overlay_container").fadeOut();
+                $(".overlay_content").html("");
+                $(".overlay_content").empty();
+                window.location.href = '/v2';
             }
         });
 

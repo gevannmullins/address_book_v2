@@ -131,6 +131,8 @@
             e.preventDefault();
             let load_url = $(this).attr('href');
             $('.overlay_container').fadeIn();
+            $(".overlay_content").html("");
+            $(".overlay_content").empty();
             $('.overlay_content').load(load_url);
         });
 
@@ -176,6 +178,8 @@
             e.preventDefault();
             let load_url = $(this).attr('href');
             $('.overlay_container').fadeIn();
+            $(".overlay_content").html("");
+            $(".overlay_content").empty();
             $('.overlay_content').load(load_url);
         });
 

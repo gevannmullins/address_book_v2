@@ -1,4 +1,14 @@
-    # Welcome to the PHP MVC framework
+# Before we get started, some useful information
+
+The system works best if it is setup to use a virtualHost
+The system needs to have a Database connection for everything to work.
+In the SQL directory you will find a copy of the database table that I dump for you to get started.
+The core code of this frameWork is not exactly mine, I have made a lot of adjustments to the core tho.
+So, to some degree I would like to think that I have improved the code.
+
+Please follow instructions below and enjoy...
+
+# Welcome to the PHP MVC framework
 
 [![GitHub stars](https://img.shields.io/github/stars/Stormiix/php-mvc-boilerplate.svg)](https://github.com/Stormiix/php-mvc-boilerplate/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/Stormiix/php-mvc-boilerplate.svg?style=flat)](https://github.com/Stormiix/php-mvc-boilerplate/network)
